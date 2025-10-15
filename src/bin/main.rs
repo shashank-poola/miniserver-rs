@@ -1,13 +1,12 @@
 use std::fs;
-use std::new::TcpListener;
-use std::net::TcpStream;
-use std::io::prelude::8;
+use std::net::{TcpListener, TcpStream};
+use std::io::prelude::*;
 use std::thread;
 use std::time::Duration;
 use miniserver_rs::ThreadPool;
 
 fn main() {
-    let listener = TcpListener::bind(["127. 0. 0. 1: 7878"].unwrap());
+    let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
     let pool = ThreadPool::new(4);
     for stream in listener.incoming().take(2) {
         let stream = stream.unwrap();
@@ -21,7 +20,7 @@ fn handle_connection(mut stream: TcpStream) {
     let mut buffer = [0;1024];
     stream.read(&mut buffer).unwrap();
     let get = b"GET / HTTP/1.1\r\n";
-    let sleep = b"GET / HTTP/1.1\r\n";
+    let sleep = b"GET /sleep HTTP/1.1\r\n";
 
     let (status_line, filename) = if buffer.starts_with(get){
         ("HTTP/1.1 200 OK", "index.html")
@@ -37,7 +36,7 @@ fn handle_connection(mut stream: TcpStream) {
     };
     let contents = fs::read_to_string(filename).unwrap();
     let response = format!(
-        "{},\r\ncontent-length: {}\r\n\r\n{}",
+        "{}\r\ncontent-length: {}\r\n\r\n{}",
         status_line,
         contents.len(),
         contents
